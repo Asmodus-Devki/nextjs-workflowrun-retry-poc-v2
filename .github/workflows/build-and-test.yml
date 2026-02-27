@@ -1,0 +1,23 @@
+name: build-and-test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+jobs:
+  thank-you-next:
+    name: thank you, next
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail first attempt, pass on retry
+        shell: bash
+        run: |
+          echo "run_attempt = ${{ github.run_attempt }}"
+          if [ "${{ github.run_attempt }}" = "1" ]; then
+            echo "Intentionally failing attempt #1"
+            exit 1
+          fi
+          echo "Attempt is not #1 → passing"
+          exit 0
