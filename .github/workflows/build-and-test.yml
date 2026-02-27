@@ -11,13 +11,13 @@ jobs:
     name: thank you, next
     runs-on: ubuntu-latest
     steps:
-      - name: Fail first attempt, pass on retry
+            - name: Fail first 3 attempts (demo CI retry abuse)
         shell: bash
         run: |
           echo "run_attempt = ${{ github.run_attempt }}"
-          if [ "${{ github.run_attempt }}" = "1" ]; then
-            echo "Intentionally failing attempt #1"
+          if [ "${{ github.run_attempt }}" -lt "4" ]; then
+            echo "Intentionally failing attempt #${{ github.run_attempt }}"
             exit 1
           fi
-          echo "Attempt is not #1 → passing"
+          echo "Attempt >= 4 → passing (optional)"
           exit 0
