@@ -1,23 +1,21 @@
 name: build-and-test
-
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   push:
     branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   thank-you-next:
     name: thank you, next
     runs-on: ubuntu-latest
     steps:
-            - name: Fail first 3 attempts (demo CI retry abuse)
+      - name: Fail for first 2 attempts, pass on 3rd
         shell: bash
         run: |
           echo "run_attempt = ${{ github.run_attempt }}"
-          if [ "${{ github.run_attempt }}" -lt "4" ]; then
-            echo "Intentionally failing attempt #${{ github.run_attempt }}"
+          if [ "${{ github.run_attempt }}" != "3" ]; then
+            echo "Intentionally failing (attempt ${{ github.run_attempt }})"
             exit 1
           fi
-          echo "Attempt >= 4 → passing (optional)"
-          exit 0
+          echo "Passing on attempt 3"
