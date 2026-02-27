@@ -1,0 +1,36 @@
+name: retry-tests
+
+on:
+  workflow_run:
+    workflows: ["build-and-test", "build-and-deploy"]
+    types: [completed]
+
+permissions:
+  actions: write
+
+jobs:
+  retry-failed-jobs:
+    name: retry failed jobs
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'failure' &&
+        github.event.workflow_run.run_attempt < 3
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prove secrets are available in workflow_run context (safe)
+        run: |
+          echo "workflow_run conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "workflow_run run_attempt: ${{ github.event.workflow_run.run_attempt }}"
+          echo "POC_SECRET exists? -> ${{ secrets.POC_SECRET != '' }}"
+
+      - name: Send retry request to GitHub API (rerun failed jobs)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Calling rerun-failed-jobs for run_id=${{ github.event.workflow_run.id }}"
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/rerun-failed-jobs
